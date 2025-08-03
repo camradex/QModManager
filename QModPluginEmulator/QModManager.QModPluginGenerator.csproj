@@ -92,8 +92,21 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>call "$(SolutionDir)\Scripts\QModPluginGenerator-post-build.cmd" "$(SolutionDir)" "$(TargetDir)" "$(ConfigurationName)"</PostBuildEvent>
+  <!-- Default to Windows if OS is not specified -->
+  <PropertyGroup Condition="'$(OS)' == ''">
+    <OS>Windows</OS>
+  </PropertyGroup>
+  <!-- Post-build for Windows -->
+  <PropertyGroup Condition="'$(OS)' == 'Windows'">
+    <PostBuildEvent>
+      call "$(SolutionDir)\Scripts\QModPluginGenerator-post-build.cmd" "$(SolutionDir)" "$(TargetDir)" "$(ConfigurationName)"
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- Post-build for Linux -->
+  <PropertyGroup Condition="'$(OS)' == 'Linux'">
+    <PostBuildEvent>
+      bash "$(SolutionDir)/Linux/QModPluginGenerator-post-build.sh" "$(SolutionDir)" "$(TargetDir)" "$(ConfigurationName)"
+    </PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\BepInEx.Core.5.4.19\build\BepInEx.Core.targets" Condition="Exists('..\packages\BepInEx.Core.5.4.19\build\BepInEx.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

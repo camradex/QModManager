@@ -159,12 +159,27 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
+  <!-- Default to Windows if OS is not specified -->
+  <PropertyGroup Condition="'$(OS)' == ''">
+    <OS>Windows</OS>
+  </PropertyGroup>
+  <!-- PreBuild for Windows -->
+  <PropertyGroup Condition="'$(OS)' == 'Windows'">
     <PreBuildEvent>
-		IF NOT EXIST "$(Dependencies)/$(Configuration)/Assemblies" (
-		mkdir "$(Dependencies)/$(Configuration)/Assemblies"
-		$(SolutionDir)nstrip.exe -p -cg -cg-exclude-events "$(ManagedDir)" "$(Dependencies)/$(Configuration)/Assemblies" &gt;nul
-		)</PreBuildEvent>
+      IF NOT EXIST "$(Dependencies)\$(Configuration)\Assemblies" (
+        mkdir "$(Dependencies)\$(Configuration)\Assemblies"
+        "$(SolutionDir)nstrip.exe" -p -cg -cg-exclude-events "$(ManagedDir)" "$(Dependencies)\$(Configuration)\Assemblies" &gt;nul
+      )
+    </PreBuildEvent>
+  </PropertyGroup>
+  <!-- PreBuild for Linux -->
+  <PropertyGroup Condition="'$(OS)' == 'Linux'">
+    <PreBuildEvent>
+      if [ ! -d "$(Dependencies)/$(Configuration)/Assemblies" ]; then
+        mkdir -p "$(Dependencies)/$(Configuration)/Assemblies"
+        mono "$(SolutionDir)NStrip.exe" -p -cg -cg-exclude-events "$(ManagedDir)" "$(Dependencies)/$(Configuration)/Assemblies" &gt; /dev/null
+      fi
+    </PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\BepInEx.Core.5.4.19\build\BepInEx.Core.targets" Condition="Exists('..\packages\BepInEx.Core.5.4.19\build\BepInEx.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
